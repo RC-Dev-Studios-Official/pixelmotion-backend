@@ -7,11 +7,22 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String    @id @default(uuid())
+  email        String    @unique
   name         String?
   passwordHash String?
-  googleId     String?  @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  googleId     String?   @unique
+  projects     Project[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  title     String
+  type      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
