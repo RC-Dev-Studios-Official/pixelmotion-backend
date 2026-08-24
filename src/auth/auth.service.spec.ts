@@ -20,7 +20,19 @@ describe('AuthService', () => {
     sign: jest.fn().mockReturnValue('mocked-jwt-token'),
   };
 
-  const service = new AuthService(prismaMock as any, jwtServiceMock as any);
+  const supabaseServiceMock = {
+    client: {
+      auth: {
+        signOut: jest.fn().mockResolvedValue({ error: null }),
+      },
+    },
+  };
+
+  const service = new AuthService(
+    prismaMock as any,
+    jwtServiceMock as any,
+    supabaseServiceMock as any,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
