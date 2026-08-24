@@ -4,14 +4,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { LoginDto } from './dto/login.dto';
 import * as crypto from 'node:crypto';
-
+import { OAuth2Client } from 'google-auth-library';
+import { GoogleLoginDto } from './dto/google-login.dto';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly supabaseService: SupabaseService,
-  ) {}
+  ) {
+    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  }
+
+  private googleClient: OAuth2Client;
 
   private hashPassword(password: string): string {
     return crypto.createHash('sha256').update(password).digest('hex');
@@ -76,6 +81,68 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: payload.name,
+      },
+    };
+  }
+
+  async googleLogin(dto: GoogleLoginDto) {
+    let ticket;
+    try {
+      ticket = await this.googleClient.verifyIdToken({
+        idToken: dto.idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Invalid Google token');
+    }
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException('Invalid Google token payload');
+    }
+
+    const normalizedEmail = payload.email.toLowerCase();
+    const googleId = payload.sub;
+    const name = payload.name ?? normalizedEmail.split('@')[0];
+
+    // Find user by email or googleId
+    let user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: normalizedEmail }, { googleId }],
+      },
+    });
+
+    if (user) {
+      // If user exists but doesn't have googleId set, update it
+      if (!user.googleId) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { googleId },
+        });
+      }
+    } else {
+      // Create a new user
+      user = await this.prisma.user.create({
+        data: {
+          email: normalizedEmail,
+          name,
+          googleId,
+        },
+      });
+    }
+
+    const jwtPayload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+    };
+
+    return {
+      access_token: this.jwtService.sign(jwtPayload),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: jwtPayload.name,
       },
     };
   }

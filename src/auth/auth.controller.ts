@@ -9,6 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,6 +20,13 @@ export class AuthController {
   async login(@Body(new ValidationPipe()) dto: LoginDto) {
     return this.authService.login(dto);
   }
+
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  async googleLogin(@Body(new ValidationPipe()) dto: GoogleLoginDto) {
+    return this.authService.googleLogin(dto);
+  }
+
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
