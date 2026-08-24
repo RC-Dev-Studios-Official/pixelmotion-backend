@@ -6,6 +6,8 @@ import { LoginDto } from './dto/login.dto';
 import * as crypto from 'node:crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { DeviceTokenDto } from './dto/device-token.dto';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -43,6 +45,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: payload.name,
+        tokens: user.tokens,
+        subscription: user.subscription,
       },
     };
   }
@@ -81,6 +85,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: payload.name,
+        tokens: user.tokens,
+        subscription: user.subscription,
       },
     };
   }
@@ -143,8 +149,45 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: jwtPayload.name,
+        tokens: user.tokens,
+        subscription: user.subscription,
       },
     };
+  }
+
+  async getSubscription(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { subscription: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return { subscription: user.subscription };
+  }
+
+  async updateSubscription(userId: string, subscription: string) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { subscription },
+    });
+
+    return { subscription: user.subscription };
+  }
+
+  async getTokenBalance(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { tokens: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return { tokens: user.tokens };
   }
 
   async logout() {
@@ -163,6 +206,28 @@ export class AuthService {
       throw new UnauthorizedException(
         error instanceof Error ? error.message : 'Logout failed',
       );
+    }
+  }
+
+  async registerDeviceToken(dto: DeviceTokenDto) {
+    try {
+      // Upsert the device token based on the token string
+      const deviceToken = await this.prisma.deviceToken.upsert({
+        where: { token: dto.token },
+        update: { userId: dto.userId },
+        create: {
+          token: dto.token,
+          userId: dto.userId,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Device token registered successfully',
+        data: deviceToken,
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to register device token');
     }
   }
 }
