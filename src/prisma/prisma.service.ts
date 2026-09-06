@@ -19,7 +19,12 @@ export class PrismaService
       console.warn('PrismaService: DATABASE_URL is not set in process.env');
     }
 
-    const pool = new pg.Pool({ connectionString });
+    const pool = new pg.Pool({
+      connectionString,
+      ssl: connectionString.includes('localhost')
+        ? false
+        : { rejectUnauthorized: false },
+    });
     const adapter = new PrismaPg(pool);
 
     super({
