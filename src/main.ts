@@ -18,8 +18,23 @@ async function getApp(env?: Record<string, any>) {
 
 export default {
   async fetch(request: Request, env?: Record<string, any>): Promise<Response> {
-    const nestApp = await getApp(env);
-    const instance = nestApp.getHttpAdapter().getInstance();
-    return instance.handle(request);
+    try {
+      const nestApp = await getApp(env);
+      const instance = nestApp.getHttpAdapter().getInstance();
+      return await instance.handle(request);
+    } catch (err: any) {
+      console.error('Cloudflare Worker Exception:', err);
+      return new Response(
+        JSON.stringify({
+          statusCode: 500,
+          error: 'Worker Error',
+          message: err?.message || String(err),
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
   },
 };

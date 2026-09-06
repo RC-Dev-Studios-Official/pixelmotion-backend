@@ -21,8 +21,8 @@ export class SupabaseService {
       supabaseKey ?? 'placeholder-key',
       {
         auth: {
-          persistSession: true,
-          autoRefreshToken: true,
+          persistSession: false,
+          autoRefreshToken: false,
           detectSessionInUrl: false,
         },
       },
