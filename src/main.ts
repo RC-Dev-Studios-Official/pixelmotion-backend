@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './all-exceptions.filter';
 import { Readable } from 'node:stream';
 import { EventEmitter } from 'node:events';
 
@@ -13,6 +14,7 @@ async function getApp(env?: Record<string, any>) {
   if (!app) {
     app = await NestFactory.create(AppModule);
     app.enableCors();
+    app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
   }
   return app;
