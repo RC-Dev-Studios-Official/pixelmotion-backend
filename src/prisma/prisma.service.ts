@@ -11,9 +11,15 @@ export class PrismaService
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
-    const connectionString =
+    let connectionString =
       process.env.DATABASE_URL ||
       'postgresql://dummy:dummy@localhost:5432/dummy';
+
+    if (!connectionString.includes('sslmode=') && !connectionString.includes('localhost')) {
+      connectionString += connectionString.includes('?')
+        ? '&sslmode=require'
+        : '?sslmode=require';
+    }
 
     if (!process.env.DATABASE_URL) {
       console.warn('PrismaService: DATABASE_URL is not set in process.env');
@@ -24,6 +30,7 @@ export class PrismaService
       ssl: connectionString.includes('localhost')
         ? false
         : { rejectUnauthorized: false },
+      max: 1,
     });
     const adapter = new PrismaPg(pool);
 
