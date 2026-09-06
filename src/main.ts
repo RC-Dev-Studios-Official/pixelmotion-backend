@@ -2,9 +2,21 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors();
-  await app.listen(process.env.PORT ?? 3000);
+let app: any;
+
+async function getApp() {
+  if (!app) {
+    app = await NestFactory.create(AppModule);
+    app.enableCors();
+    await app.init();
+  }
+  return app;
 }
-bootstrap();
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const nestApp = await getApp();
+    const instance = nestApp.getHttpAdapter().getInstance();
+    return instance.handle(request);
+  },
+};
