@@ -13,7 +13,7 @@ command = "npm run build"
 "@nestjs/websockets/socket-module" = "./empty-module.js"
 
 [vars]
-DATABASE_URL = "postgresql://postgres:7899795531Rajesh@db.jlvlydmklqywmwsgqplb.supabase.co:5432/postgres?sslmode=require"
+DATABASE_URL = "postgresql://postgres.jlvlydmklqywmwsgqplb:7899795531Rajesh@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
 JWT_SECRET = "jwt_pixelmotion_3029_production"
 SUPABASE_URL = "https://jlvlydmklqywmwsgqplb.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsdmx5ZG1rbHF5d213c2dxcGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDY5NDIsImV4cCI6MjEwMjEyMjk0Mn0.8xDrNk231t5HLs6geu05Yn0hpgYWWYmr5cAfkkZinrQ"
