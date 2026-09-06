@@ -1,0 +1,6 @@
+name = "pixelmotion-backend"
+main = "dist/main.js"
+compatibility_date = "2026-09-06"
+
+[build]
+command = "npm run build"
