@@ -8,3 +8,6 @@ command = "npm run build"
 
 [alias]
 "@nestjs/microservices" = "./empty-module.js"
+"@nestjs/microservices/microservices-module" = "./empty-module.js"
+"@nestjs/websockets" = "./empty-module.js"
+"@nestjs/websockets/socket-module" = "./empty-module.js"
