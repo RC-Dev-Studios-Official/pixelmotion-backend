@@ -4,7 +4,10 @@ import { AppModule } from './app.module';
 
 let app: any;
 
-async function getApp() {
+async function getApp(env?: Record<string, any>) {
+  if (env) {
+    Object.assign(process.env, env);
+  }
   if (!app) {
     app = await NestFactory.create(AppModule);
     app.enableCors();
@@ -14,8 +17,8 @@ async function getApp() {
 }
 
 export default {
-  async fetch(request: Request): Promise<Response> {
-    const nestApp = await getApp();
+  async fetch(request: Request, env?: Record<string, any>): Promise<Response> {
+    const nestApp = await getApp(env);
     const instance = nestApp.getHttpAdapter().getInstance();
     return instance.handle(request);
   },
