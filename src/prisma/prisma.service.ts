@@ -1,7 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
 
 @Injectable()
 export class PrismaService
@@ -15,24 +14,22 @@ export class PrismaService
       process.env.DATABASE_URL ||
       'postgresql://dummy:dummy@localhost:5432/dummy';
 
-    if (!connectionString.includes('sslmode=') && !connectionString.includes('localhost')) {
-      connectionString += connectionString.includes('?')
-        ? '&sslmode=require'
-        : '?sslmode=require';
-    }
-
     if (!process.env.DATABASE_URL) {
       console.warn('PrismaService: DATABASE_URL is not set in process.env');
+    } else {
+      if (!connectionString.includes('pgbouncer=')) {
+        connectionString += connectionString.includes('?')
+          ? '&pgbouncer=true'
+          : '?pgbouncer=true';
+      }
+      if (!connectionString.includes('connection_limit=')) {
+        connectionString += '&connection_limit=1';
+      }
     }
 
-    const pool = new pg.Pool({
+    const adapter = new PrismaPg({
       connectionString,
-      ssl: connectionString.includes('localhost')
-        ? false
-        : { rejectUnauthorized: false },
-      max: 1,
     });
-    const adapter = new PrismaPg(pool);
 
     super({
       adapter,
